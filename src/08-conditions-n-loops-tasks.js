@@ -387,7 +387,8 @@ function toNaryString(num, n) {
   let res = '';
   let Q = num;
   let R;
-  while (true) {
+  const tr = true;
+  while (tr) {
     R = Q % n;
     res = R + res;
     Q = (Q - R) / n;

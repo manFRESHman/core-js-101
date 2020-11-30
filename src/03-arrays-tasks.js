@@ -444,7 +444,6 @@ function toStringList(arr) {
  */
 function sortCitiesArray(arr) {
   const ar = arr.slice().sort((a, b) => {
-    console.log(a.city, b.city);
     if (a.country === b.country) {
       return a.city > b.city ? 1 : -1;
     }
