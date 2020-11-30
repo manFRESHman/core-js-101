@@ -20,8 +20,14 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  return {
+    width,
+    height,
+    getArea() {
+      return this.width * this.height;
+    },
+  };
 }
 
 
@@ -35,8 +41,8 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
 
 
@@ -51,8 +57,10 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  const res = JSON.parse(json);
+  Object.setPrototypeOf(res, proto);
+  return res;
 }
 
 
@@ -111,32 +119,104 @@ function fromJSON(/* proto, json */) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  sel: {
+    element: '',
+    id: '',
+    klass: '',
+    attr: '',
+    pklass: '',
+    pelement: '',
+    sm: '',
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    if (this.sel.element) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    if (this.sel.id || this.sel.klass || this.sel.attr || this.sel.pklass || this.sel.pelement) {
+      throw new Error('Selector parts should be arranged in the following order: '
+        + 'element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    const nw = {};
+    nw.sel = { ...this.sel };
+    nw.sel.element += value;
+    Object.setPrototypeOf(nw, this);
+    return nw;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    if (this.sel.id) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    if (this.sel.klass || this.sel.attr || this.sel.pklass || this.sel.pelement) {
+      throw new Error('Selector parts should be arranged in the following order: '
+        + 'element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    const nw = {};
+    nw.sel = { ...this.sel };
+    nw.sel.id += `#${value}`;
+    Object.setPrototypeOf(nw, this);
+    return nw;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    if (this.sel.attr || this.sel.pklass || this.sel.pelement) {
+      throw new Error('Selector parts should be arranged in the following order: '
+        + 'element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    const nw = {};
+    nw.sel = { ...this.sel };
+    nw.sel.klass += `.${value}`;
+    Object.setPrototypeOf(nw, this);
+    return nw;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    if (this.sel.pklass || this.sel.pelement) {
+      throw new Error('Selector parts should be arranged in the following order: '
+        + 'element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    const nw = {};
+    nw.sel = { ...this.sel };
+    nw.sel.attr += `[${value}]`;
+    Object.setPrototypeOf(nw, this);
+    return nw;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    if (this.sel.pelement) {
+      throw new Error('Selector parts should be arranged in the following order: '
+        + 'element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    const nw = {};
+    nw.sel = { ...this.sel };
+    nw.sel.pklass += `:${value}`;
+    Object.setPrototypeOf(nw, this);
+    return nw;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    if (this.sel.pelement) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    const nw = {};
+    nw.sel = { ...this.sel };
+    nw.sel.pelement += `::${value}`;
+    Object.setPrototypeOf(nw, this);
+    return nw;
+  },
+
+  combine(selector1, combinator, selector2) {
+    const nw = {};
+    this.sel.sm = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    Object.setPrototypeOf(nw, this);
+    return nw;
+  },
+
+  stringify() {
+    const res = `${this.sel.sm}${this.sel.element}${this.sel.id}${this.sel.klass}${this.sel.attr}${this.sel.pklass}${this.sel.pelement}`;
+    this.sel.sm = '';
+    return res;
   },
 };
 
